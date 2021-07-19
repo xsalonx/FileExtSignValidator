@@ -1,6 +1,9 @@
 package com.ld.fielValidation;
 
+import java.util.Optional;
+
 public interface Validatable {
-    boolean validate();
+    boolean canValidate();
+    Optional<Boolean> validate();
 
 }

@@ -5,10 +5,12 @@ public class Main {
 
         if (args.length == 0) {
             System.out.println("No input");
+            return;
         }
+        for (String path : args) {
+            FileExtSignValidatable file = new FileExtSignValidatable(path);
+            System.out.println(file.validate());
 
-        for (String s : args) {
-            System.out.print(s);
         }
     }
 }
