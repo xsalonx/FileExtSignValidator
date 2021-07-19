@@ -24,6 +24,7 @@ public class FileExtSignValidatable extends File implements Validatable {
     public FileExtSignValidatable(String pathname) {
         super(pathname);
         this.extension = this.getExtensionFromPath();
+        System.out.println(this.extension);
     }
 
     public void printAvailableExtensions() {
@@ -38,7 +39,7 @@ public class FileExtSignValidatable extends File implements Validatable {
 
         if (lastDotIdx == path.length() - 1
                 || lastDotIdx == -1
-                || lastBackslashIdx < Math.max(lastSlashIdx, lastBackslashIdx))
+                || lastDotIdx < Math.max(lastSlashIdx, lastBackslashIdx))
             return null;
         else {
             return path.substring(lastDotIdx + 1);
@@ -53,7 +54,7 @@ public class FileExtSignValidatable extends File implements Validatable {
     public boolean exists() {
         boolean cond = super.exists();
         if (!cond)
-            System.out.println(this.getPath() + " : cannot handle this extension");
+            System.out.println(this.getPath() + " : does not exist");
         return cond;
     }
 
@@ -63,7 +64,7 @@ public class FileExtSignValidatable extends File implements Validatable {
 
         boolean cond = extToHexMap.containsKey(this.extension);
         if (!cond)
-            System.out.println(this.getPath() + " : does not exist");
+            System.out.println(this.getPath() + " : cannot handle this extension");
         return cond;
     }
 
@@ -71,23 +72,26 @@ public class FileExtSignValidatable extends File implements Validatable {
     public Optional<Boolean> validate() {
         if (!this.canValidate()) return Optional.ofNullable(null);
         try {
-            int i, b;
+            int i, b, hb;
 
-            FileInputStream in = new FileInputStream(this);
             for (String signature : extToHexMap.get(this.extension)) {
+                FileInputStream in = new FileInputStream(this);
                 String s = signature.replaceAll(" ", "");
+//                System.out.println(s);
                 for (i=0; i<s.length() && (b = in.read()) != -1; i += 2 ) {
-                    if (b != Integer.parseInt(s.substring(i, i+2), 16))
-                        return Optional.of(false);
-
+                    hb = Integer.parseInt(s.substring(i, i+2), 16);
+                    System.out.println(b);
+                    System.out.println(hb);
+                    if (b != hb)
+                        break;
                 }
-                if (i != s.length())
-                    return Optional.of(false);
+                if (i == s.length())
+                    return Optional.of(true);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return Optional.of(true);
+        return Optional.of(false);
     }
 }
