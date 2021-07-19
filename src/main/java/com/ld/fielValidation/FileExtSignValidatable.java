@@ -18,13 +18,21 @@ public class FileExtSignValidatable extends File implements Validatable {
         extToHexMap.put("gif", new HashSet<>(Arrays.asList(
                 "47 49 46 38 37 61",
                 "47 49 46 38 39 61")));
+        extToHexMap.put("jpg", new HashSet<>(Arrays.asList(
+                "FF D8 FF DB",
+                "FF D8 FF E0 00 10 4A 46",
+                "49 46 00 01",
+                "FF D8 FF EE",
+                "FF D8 FF E1 ?? ?? 45 78",
+                "69 66 00 00")));
+        extToHexMap.put("png", new HashSet<>(Arrays.asList(
+                "89 50 4E 47 0D 0A 1A 0A")));
     }
     private String extension;
 
     public FileExtSignValidatable(String pathname) {
         super(pathname);
         this.extension = this.getExtensionFromPath();
-        System.out.println(this.extension);
     }
 
     public void printAvailableExtensions() {
@@ -68,21 +76,19 @@ public class FileExtSignValidatable extends File implements Validatable {
         return cond;
     }
 
-    @Override
-    public Optional<Boolean> validate() {
+    private Optional<Boolean> validate__() {
         if (!this.canValidate()) return Optional.ofNullable(null);
         try {
-            int i, b, hb;
+            int i, patternByte, headerByte;
 
             for (String signature : extToHexMap.get(this.extension)) {
                 FileInputStream in = new FileInputStream(this);
                 String s = signature.replaceAll(" ", "");
-//                System.out.println(s);
-                for (i=0; i<s.length() && (b = in.read()) != -1; i += 2 ) {
-                    hb = Integer.parseInt(s.substring(i, i+2), 16);
-                    System.out.println(b);
-                    System.out.println(hb);
-                    if (b != hb)
+                for (i=0; i<s.length() && (patternByte = in.read()) != -1; i += 2 ) {
+                    if (s.charAt(i) == '?')
+                        continue;
+                    headerByte = Integer.parseInt(s.substring(i, i+2), 16);
+                    if (patternByte != headerByte)
                         break;
                 }
                 if (i == s.length())
@@ -93,5 +99,18 @@ public class FileExtSignValidatable extends File implements Validatable {
             e.printStackTrace();
         }
         return Optional.of(false);
+    }
+
+    private void tryToFindExtension() {
+
+    }
+
+    @Override
+    public Optional<Boolean> validate() {
+        Optional<Boolean> res =  this.validate__();
+        if (res.isPresent() && res.get() == Boolean.FALSE) {
+
+        }
+        return res;
     }
 }
