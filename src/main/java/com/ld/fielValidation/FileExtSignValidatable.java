@@ -27,6 +27,26 @@ public class FileExtSignValidatable extends File implements Validatable {
                 "69 66 00 00")));
         extToHexMap.put("png", new HashSet<>(Arrays.asList(
                 "89 50 4E 47 0D 0A 1A 0A")));
+        extToHexMap.put("txt", new HashSet<>(Arrays.asList(
+                "EF BB BF",
+                "FF FE",
+                "FE FF",
+                "FF FE 00 00",
+                "00 00 FE FF",
+                "0E FE FF"
+        )));
+        extToHexMap.put("bin", new HashSet<>(Arrays.asList(
+                "53 50 30 31")));
+        extToHexMap.put("exe", new HashSet<>(Arrays.asList(
+                "5A 4D")));
+        extToHexMap.put("sh", new HashSet<>(Arrays.asList(
+                "23 21")));
+        extToHexMap.put("mp3", new HashSet<>(Arrays.asList(
+                "FF FB",
+                "FF F3",
+                "FF F2")));
+        extToHexMap.put("class", new HashSet<>(Arrays.asList(
+                "CA FE BA BE")));
     }
     private String extension;
 
