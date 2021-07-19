@@ -9,16 +9,17 @@ import java.util.Arrays;
 public class FileExtSignValidatable extends File implements Validatable {
 
     private static HashMap<String, HashSet<String>> extToHexMap;
-
     static {
         extToHexMap = new HashMap<>();
         extToHexMap.put("gif", new HashSet<>(Arrays.asList(
                 "47 49 46 38 37 61",
                 "47 49 46 38 39 61")));
     }
+    private String ext;
 
     public FileExtSignValidatable(String pathname) {
         super(pathname);
+        this.ext = this.getExtension();
     }
 
     public void printAvailableExtensions() {
