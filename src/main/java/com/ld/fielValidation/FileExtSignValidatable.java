@@ -76,23 +76,32 @@ public class FileExtSignValidatable extends File implements Validatable {
         return cond;
     }
 
+    private Optional<Boolean> analyzeForSignature(String signature) throws IOException {
+        int i, patternByte, headerByte;
+
+        FileInputStream in = new FileInputStream(this);
+        String s = signature.replaceAll(" ", "");
+        for (i=0; i<s.length() && (patternByte = in.read()) != -1; i += 2 ) {
+            if (s.charAt(i) == '?')
+                continue;
+            headerByte = Integer.parseInt(s.substring(i, i+2), 16);
+            if (patternByte != headerByte)
+                break;
+        }
+        if (i == s.length())
+            return Optional.of(true);
+
+        return Optional.of(false);
+    }
+
     private Optional<Boolean> validate__() {
         if (!this.canValidate()) return Optional.ofNullable(null);
         try {
-            int i, patternByte, headerByte;
 
             for (String signature : extToHexMap.get(this.extension)) {
-                FileInputStream in = new FileInputStream(this);
-                String s = signature.replaceAll(" ", "");
-                for (i=0; i<s.length() && (patternByte = in.read()) != -1; i += 2 ) {
-                    if (s.charAt(i) == '?')
-                        continue;
-                    headerByte = Integer.parseInt(s.substring(i, i+2), 16);
-                    if (patternByte != headerByte)
-                        break;
-                }
-                if (i == s.length())
-                    return Optional.of(true);
+                Optional<Boolean> res = this.analyzeForSignature(signature);
+                if (res.get() == Boolean.TRUE)
+                    return res;
             }
 
         } catch (IOException e) {
@@ -102,14 +111,26 @@ public class FileExtSignValidatable extends File implements Validatable {
     }
 
     private void tryToFindExtension() {
-
+        for (String ext : extToHexMap.keySet()) {
+            for (String signature : extToHexMap.get(ext)) {
+                try {
+                    Optional<Boolean> res = this.analyzeForSignature(signature);
+                    if (res.get() == Boolean.TRUE) {
+                        this.extension = ext;
+                        return;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     @Override
     public Optional<Boolean> validate() {
         Optional<Boolean> res =  this.validate__();
         if (res.isPresent() && res.get() == Boolean.FALSE) {
-
+            this.tryToFindExtension();
         }
         return res;
     }
