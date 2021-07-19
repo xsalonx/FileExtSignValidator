@@ -78,12 +78,15 @@ public class FileExtSignValidatable extends File implements Validatable {
         return this.extension;
     }
     
-    @Override 
-    public boolean exists() {
+    public boolean exists(boolean showMessage) {
         boolean cond = super.exists();
-        if (!cond)
+        if (!cond && showMessage)
             System.out.println(this.getPath() + " : does not exist");
         return cond;
+    }
+    @Override
+    public boolean exists() {
+        return this.exists(true);
     }
 
     @Override
@@ -130,27 +133,30 @@ public class FileExtSignValidatable extends File implements Validatable {
         return Optional.of(false);
     }
 
-    private void tryToFindExtension() {
+    private Optional<Boolean> tryToFindExtension() {
+        if (!this.exists(false))
+            return Optional.ofNullable(null);
         for (String ext : extToHexMap.keySet()) {
             for (String signature : extToHexMap.get(ext)) {
                 try {
                     Optional<Boolean> res = this.analyzeForSignature(signature);
                     if (res.get() == Boolean.TRUE) {
                         this.extension = ext;
-                        return;
+                        return Optional.of(true);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
+        return Optional.of(false);
     }
 
     @Override
     public Optional<Boolean> validate() {
         Optional<Boolean> res =  this.validate__();
-        if (res.isPresent() && res.get() == Boolean.FALSE) {
-            this.tryToFindExtension();
+        if (!res.isPresent() || res.get() == Boolean.FALSE) {
+            res = this.tryToFindExtension();
         }
         return res;
     }
